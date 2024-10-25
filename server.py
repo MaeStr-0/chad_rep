@@ -1,3 +1,4 @@
+
 from db import *
 from hasher import *
 import asyncio
@@ -5,25 +6,28 @@ import uuid
 import websockets
 import json
 
+connections = {}  # Словарь для хранения соединений
 
-
-connections = {} # Словарь для хранения соединений
 
 async def handler(websocket, path):
     try:
         print("Процесс try")
         try:
-            message =json.loads(await websocket.recv())
+            message = json.loads(await websocket.recv())
         except json.JSONDecodeError:
             print("Error decoding")
             await websocket.close()
-            
+
+
         match message["operation"]:
             case "auth":
+
                 print("Case auth")
                 name = message["username"]
                 pwd = message["password"]
-                hash =await  hash_password(name, pwd)
+                connection_id=name
+                connections[connection_id]=websocket
+                hash = await  hash_password(name, pwd)
                 answer = await auth(name, hash)
                 if answer == 1:
                     print(f"auth {connection_id} correct")
@@ -37,6 +41,8 @@ async def handler(websocket, path):
                 print("Case reg")
                 name = message["username"]
                 pwd = message["password"]
+                connection_id = name
+                connections[connection_id] = websocket
                 hash = await hash_password(name, pwd)
                 answer = await register(name, hash)
                 if answer == 1:
@@ -52,16 +58,18 @@ async def handler(websocket, path):
             case "mes":
                 sender = message["send_from"]
                 receiver = message["send_to"]
-                if existance_check == "exist":
+                if existence_check() == "exist":
                     await websocket.send(message["text"], connections[receiver])
-            #await websocket.close()
+            # await websocket.close()
 
+        #connection_id = name
+        #connections[connection_id] = websocket
         # Сохраняем соединение в словарь
-        connections[connection_id] = websocket
-        async for message in websocket:
-            print(f"Получено сообщение от {connection_id}: {message}")
+        #connections[connection_id] = websocket
+        #async for message in websocket:
+        #    print(f"Получено сообщение от {connection_id}: {message}")
         # Очищаем соединение из словаря при закрытии
-        connections.pop(connection_id, None)
+        #connections.pop(connection_id, None)
 
     except websockets.exceptions.ConnectionClosedOK:
         print(f"Соединение {connection_id} закрыто")
@@ -72,7 +80,7 @@ async def handler(websocket, path):
     except KeyboardInterrupt:
         print("Работа сервера прекращена вручную")
         for connection_id, websocket in connections.items():
-              await websocket.close()
+            await websocket.close()
         print("Все соединения закрыты")
     except asyncio.exceptions.CancelledError:
         print("Работа асинхронных функций прервана")
@@ -82,15 +90,16 @@ async def handler(websocket, path):
     except:
         print("dgfdgfd")
 
-#async def send_message(connection_id, message):
-   #if connection_id in connections:
-       #websocket = connections[connection_id]
-       #await websocket.send(message)
-   #else:
-       #print(f"Соединение с идентификатором {connection_id} не найдено")
+
+# async def send_message(connection_id, message):
+# if connection_id in connections:
+# websocket = connections[connection_id]
+# await websocket.send(message)
+# else:
+# print(f"Соединение с идентификатором {connection_id} не найдено")
 
 async def main():
-    port=8765
+    port = 8765
     async with websockets.serve(handler, "212.67.15.92", port):
         print(f"Сервер запущен на ws://212.67.15.92:{port}")
         await asyncio.Future()  # Зациклить сервер
