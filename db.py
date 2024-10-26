@@ -1,7 +1,7 @@
-
 import sqlite3
 import string
 import asyncio
+
 
 async def existence_check(username):
     try:
@@ -26,8 +26,6 @@ async def existence_check(username):
         return "process_finished"
 
 
-
-
 async def register(username, password):
     try:
         print('Процесс - регистрация пользователя')
@@ -40,13 +38,13 @@ async def register(username, password):
         print(answer)
         if answer == 0:
             inserter = "INSERT INTO credentials VALUES(?, ?);"
-            data = (username,password)
+            data = (username, password)
             print(data)
-            back=cursor.execute(inserter, data)
+            back = cursor.execute(inserter, data)
             print(back.fetchone())
             print("Регистрация успешна")
             sqlite_connection.commit()
-            t=cursor.execute("SELECT * FROM credentials;").fetchall()
+            t = cursor.execute("SELECT * FROM credentials;").fetchall()
             print(t)
             return 1
 
@@ -54,7 +52,7 @@ async def register(username, password):
             print("Логин занят")
             sqlite_connection.commit()
             getter = "SELECT * FROM credentials;"
-            t=cursor.execute(getter).fetchall()
+            t = cursor.execute(getter).fetchall()
             print(f"All data {t}")
             return 0
 
@@ -65,7 +63,6 @@ async def register(username, password):
         print("smthng")
 
 
-
 async def auth(username, pwd):
     try:
         print('Процесс - аутентификация')
@@ -73,40 +70,43 @@ async def auth(username, pwd):
         cursor = sqlite_connection.cursor()
         print("Подключен к SQLite")
         sqlite_finder = "SELECT COUNT(*) FROM credentials WHERE username = ?;"
-        data =[(username)]
+        data = [(username)]
         answer = cursor.execute(sqlite_finder, data).fetchone()[0]
         print(answer)
         if answer == 1:
             print("Данные найдены")
             passw_verify = "SELECT password FROM credentials WHERE username = ?;"
             verify = cursor.execute(passw_verify, data).fetchone()[0]
-            print("This is verify",verify)
+            print("This is verify", verify)
             if pwd == verify:
-                 print("success")
-                 return 1
-                 sqlite_connection.commit()
-                 
+                print("success")
+                sqlite_connection.commit()
+                return 1
+
+
             else:
-                 return 0
-                 print("lose")
-                 sqlite_connection.commit()
-                 cursor.close()
+
+                print("lose")
+                sqlite_connection.commit()
+                cursor.close()
+                return 0
         else:
             print("Данные не найдены")
-            return 0
+
             sqlite_connection.commit()
             cursor.close()
+            return 0
 
         print("end")
 
- 
+
     except:
         print("Исключение")
         return 0
     finally:
         if sqlite_connection:
-          #sqlite_connection.close()
-           print('Процесс завершен')
+            # sqlite_connection.close()
+            print('Процесс завершен')
 
 
 '''
@@ -115,6 +115,6 @@ async def main():
     await auth("user123","uiop") 
     await existence_check("user123")
 '''
-#register("user123","uiop")
-#auth("user123","uiop")
-#existence_check("user123")
+# register("user123","uiop")
+# auth("user123","uiop")
+# existence_check("user123")
