@@ -34,8 +34,8 @@ async def handler(websocket, path):
                     await websocket.send("auth success")
                     return 1
                 else:
-                    await print(f"auth {connection_id} incorrect")
-                    websocket.send("auth denied")
+                    print(f"auth {connection_id} incorrect")
+                    await websocket.send("auth denied")
                     return 0
             case "reg":
                 print("Case reg")
