@@ -53,11 +53,13 @@ async def handler(websocket, path):
                     print("Reg denied")
                     await websocket.send("reg denied")
                     print("Denie message send to client")
+                    await websocket.close()
+                    connections.pop(connection_id, None)
                     return 0
             case "mes":
                 sender = message["send_from"]
                 receiver = message["send_to"]
-                if existence_check() == "exist":
+                if existence_check(receiver) == "exist":
                     await websocket.send(message["text"], connections[receiver])
             # await websocket.close()
 
