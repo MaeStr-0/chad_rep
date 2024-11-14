@@ -1,3 +1,4 @@
+from multiprocessing.reduction import recvfds
 
 from db import *
 from hasher import *
@@ -31,7 +32,8 @@ async def handler(websocket, path):
                 answer = await auth(name, hash)
                 if answer == 1:
                     print(f"auth {connection_id} correct")
-                    await websocket.send("auth success")
+                    json_ans = json.dumps({'operation':"auth", 'content': "auth success"})
+                    await websocket.send(json_ans)
                     return 1
                 else:
                     print(f"auth {connection_id} incorrect")
